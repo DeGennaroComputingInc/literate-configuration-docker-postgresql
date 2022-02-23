@@ -7,5 +7,5 @@ A literate programming project to install, configure and run PostgresSQL in a Do
 ## TODOs
 
 1.  <del>TODO setup an org-babel tangle for the readme</del>
-2.  
+2.  TODO add PostgreSQL Dockerfile
 
