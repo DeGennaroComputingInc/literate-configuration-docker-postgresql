@@ -1,0 +1,84 @@
+TODO Add Dockerfile
+#+begin_src dockerfile :tangle Dockerfile
+# Borrowed heavily from https://www.masteringemacs.org/article/speed-up-emacs-libjansson-native-elisp-compilation
+FROM ubuntu:20.04
+
+LABEL MAINTAINER "George DeGennaro <degennaro.computing.inc@gmail.com>"
+
+WORKDIR /opt
+# Needed for add-apt-repository, et al.
+ENV DEBIAN_FRONTEND=noninteractive
+
+# If you're installing this outside Docker you may not need this.
+RUN apt-get update \
+        && apt-get install -y \
+        git \
+        make \
+        bison \
+        flex \
+        perl
+
+RUN ["git", "clone", "git://git.postgresql.org/git/postgresql.git"]
+
+# If you're installing this outside Docker you may not need this.
+RUN apt-get update \
+        && apt-get install -y \
+        apt-transport-https \
+        ca-certificates \
+        curl \
+        gnupg-agent \
+        software-properties-common
+
+# Needed for gcc-10 and the build process.
+RUN add-apt-repository ppa:ubuntu-toolchain-r/ppa \
+        && apt-get update -y \
+        && apt-get install -y \
+        gcc-10 \
+        libgccjit0 \
+        libgccjit-10-dev
+
+# Needed for fast JSON and the configure step
+RUN apt-get install -y libjansson4 libjansson-dev git
+
+# Needed for fast JSON and the configure step
+RUN apt-get install -y autogen
+
+# Needed for fast JSON and the configure step
+RUN apt-get install -y \
+        libreadline8 \
+        libreadline-dev
+
+# Needed for fast JSON and the configure step
+RUN apt-get install -y \
+        zlib1g \
+        zlib1g-dev
+
+# Shut up debconf as it'll fuss over postfix for no good reason
+# otherwise. If you're doing this outside Docker, you do not need to # do this.
+
+# Needed for compiling libgccjit or we'll get cryptic error messages
+# about failing smoke tests.
+ENV CC="gcc-10"
+
+WORKDIR postgresql
+RUN pwd
+RUN ["./configure"]
+RUN ["make"]
+RUN ["su", "-m"]
+RUN ["make", "install"]
+RUN ["adduser", "postgres"]
+RUN ["mkdir", "-p", "/var/log/postgresql/"]
+RUN ["chown", "-R", "postgres", "/var/log/postgresql/"]
+RUN ["mkdir", "-p", "/usr/local/pgsql/data"]
+RUN ["chown", "-R", "postgres", "/usr/local/pgsql/data"]
+#HR https://serverfault.com/a/446982
+RUN ["chmod", "1777", "/tmp"]
+USER postgres
+RUN ["whoami"]
+RUN ["/usr/local/pgsql/bin/initdb", "-D", "/usr/local/pgsql/data"]
+RUN /usr/local/pgsql/bin/pg_ctl -D /usr/local/pgsql/data -l /var/log/postgresql/logfile start && /usr/local/pgsql/bin/createdb test && /usr/local/pgsql/bin/psql test
+#RUN ["find", "/", "-name", "postgres"]
+
+EXPOSE 5432/tcp
+ENTRYPOINT ["/usr/local/pgsql/bin/postgres", "-D", "/usr/local/pgsql/data"]
+#+end_src

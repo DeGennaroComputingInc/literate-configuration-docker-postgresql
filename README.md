@@ -7,5 +7,8 @@ A literate programming project to install, configure and run PostgresSQL in a Do
 ## TODOs
 
 1.  <del>TODO setup an org-babel tangle for the readme</del>
-2.  TODO add PostgreSQL Dockerfile
+2.  <del>TODO add PostgreSQL Dockerfile</del>
+3.  TODO break out ':tangle' to seperate the filename and output directory
+4.  TODO add \`docker compose\` YML file
+5.  TODO add lisp blocks
 
