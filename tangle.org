@@ -1,4 +1,3 @@
-TODO Add Dockerfile
 #+begin_src dockerfile :tangle Dockerfile
 # Borrowed heavily from https://www.masteringemacs.org/article/speed-up-emacs-libjansson-native-elisp-compilation
 FROM ubuntu:20.04
